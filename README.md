@@ -20,7 +20,7 @@ conda activate mbbr
 You can download the VRD and/or VG200 dataset by running the main_prerequisites python file. You can define 
 the dataset as an argument:
 ```python
-main_prerequisites.py <VRD|VG200>
+python3 main_prerequisites.py <VRD|VG200>
 ```
 
 ### Train
