@@ -23,7 +23,7 @@ class TestClassifier(BaseObjectClassifier):
         self.test_on_masked = config.test_on_masked
         self.pretrained_net = TransformerClassifier(config, return_only_scores=False, mask=self.test_on_masked)
         pretrained_model = config.pretrained_model
-        tmp_path_name = f"/nfs-data/vrd_prerequisites/models/{pretrained_model}_preddet_VG200_finetuned"
+        tmp_path_name = f"prerequisites/models/{pretrained_model}_preddet_VG200_finetuned"
         self.logger.debug(f'Loading {tmp_path_name.split("/")[-1]} model..')
         self.logger.warn("The pretrained models are hard coded for VG200 dataset only!!")
         tmp_path_name = osp.join(tmp_path_name, 'model.pt')
@@ -35,7 +35,7 @@ class TestClassifier(BaseObjectClassifier):
 
         self.obj_cls = ObjectClassifier(config)
         pretrained_model = 'obj_cls_256' if config.dataset == 'VG200' else 'obj_cls_256_v3'
-        tmp_path_name = f"/nfs-data/vrd_prerequisites/models/{pretrained_model}_preddet_{config.dataset}_finetuned"
+        tmp_path_name = f"prerequisites/models/{pretrained_model}_preddet_{config.dataset}_finetuned"
         self.logger.debug(f'Loading {tmp_path_name.split("/")[-1]} model..')
 
         tmp_path_name = osp.join(tmp_path_name, 'model.pt')

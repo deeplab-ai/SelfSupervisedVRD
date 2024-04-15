@@ -46,20 +46,6 @@ class BaseTrainTester:
         self._steps = 0
         self._train_logs = 0
         self._val_logs = 0
-        # self.pretrained = False
-        # self.accum_data = {'predictions': [],
-        #                    'labels': [],
-        #                    'grnd_scores': [],
-        #                    'grnd_scores_unbiased': [],
-        #                    'pred_scores': []
-        #                    }
-        # self.log_data = {'predictions': [],
-        #                  'labels': [],
-        #                  'grnd_scores': [],
-        #                  'grnd_scores_unbiased': [],
-        #                  'pred_scores': [],
-        #                  'weights': []
-        #                  }
 
     def _set_from_config(self, config):
         """Load config variables."""
@@ -133,82 +119,27 @@ class BaseTrainTester:
         # Check for existent checkpoint
         model_path_name = osp.join(self._models_path, 'model.pt')
         trained, epoch = self._check_for_checkpoint(model_path_name)
-        # trained = True  # ######### CAREFUL ################
-        # if 'pretrained' in self._net_name and trained:  # transfer learning
-        #     self.pretrained = True
-        #     self.logger.info('Perform Transfer Learning...')
-        #     for name, param in self.net.named_parameters():
-        #         if 'classifier' in name or 'fc_objects' in name:
-        #             param.requires_grad = True
-        #         else:
-        #             param.requires_grad = False
-        #
-        #     # num_in_features = self.net.shared_FFN.in_features
-        #     # print(num_in_features)
-        #     # self.net.shared_FFN = torch.nn.Sequential(
-        #     #     torch.nn.Linear(1024, 512), torch.nn.ReLU(),
-        #     #     torch.nn.Linear(512, 128), torch.nn.ReLU(),
-        #     #     torch.nn.Linear(128, self._num_classes)
-        #     # )
-        #     epoch = 0
-        #
-        #     net_name = self._net_name.split('pretrained')
-        #     new_net_name = net_name[0] + 'finetuned' + net_name[1]
-        #     self._net_name = new_net_name
-        #
-        #     model_path = model_path_name.split('pretrained')
-        #     model_path_name = model_path[0] + 'finetuned' + model_path[1]
-        #     if not osp.exists(model_path_name.split('/model.pt')[0]):
-        #         os.makedirs(model_path_name.split('/model.pt')[0])
-        #     model_path_name = osp.join(model_path_name.split('/model.pt')[0], 'model.pt')
-        #     self.logger.info(f'New model name {self._net_name}')
-        #     self.logger.debug('Configuring new optimizer.')
-        #     self.optimizer = self._setup_optimizer()
-        #     self.logger.debug('Configuring new Scheduler.')
-        #     self.scheduler = self._setup_scheduler(self.optimizer)
-        #     # print(model_path_name)
-        #     # print(self._net_name)
-        #     # return self.net
-        # if self.finetune:
-        #     self.logger.debug('Loading pretrained model... ')
-        #     tmp_path_name = model_path_name.split('finetuned')[0] + 'pretrained'
-        #     tmp_path_name = osp.join(tmp_path_name, 'model.pt')
-        #     checkpoint = torch.load(tmp_path_name, map_location=self._device)
-        #     self.pretrained_net.load_state_dict(checkpoint['model_state_dict'], strict=False)
-        #     self.pretrained_net.eval()
-        #     self.net.to(self._device)
         if trained:
-            # self.pretrained = True
             return self.net
-        # if trained:  # model is already trained
-        #     return self.net
+
         epochs = list(range(self._epochs))[epoch:]
 
         # Settings and loading
         self.net.train()
         self.net.to(self._device)
-        # if self.seed:
-        #     torch.manual_seed(self.seed)
         self._set_data_loaders(mode_ids={'train': 0, 'val': 1})
         if not self.lb_imgs:
             self.data_loader = self._data_loaders['train']
             self.logger.debug("Batch size is %d", self._batch_size)
         else:
             self.lb_data_loader, self.unlb_data_loader = self._data_loaders['labeled'], self._data_loaders['unlabeled']
-            # self.logger.debug("Batch size is %d", self._batch_size)
-        #self.logger.debug("Batch size is %d", self._batch_size)
 
         # Main training procedure
         for epoch in epochs:
-            # if self.seed:
-            #     torch.manual_seed(self.seed)
             keep_training = self._train_epoch(epoch, model_path_name)
             if not keep_training:
                 self.logger.info('Model converged, exit training')
                 break
-
-        # data logging for consistency_loss debugging, delete after usage
-        # json.dump(self.log_data, open('./log_data_'+self._net_name+'.json', 'w'))
 
         # Training is complete, save model
         self._save_model(model_path_name, epoch, True)
@@ -268,12 +199,6 @@ class BaseTrainTester:
                     self.writer.add_scalars('Train Loss', losses,
                                             self._train_logs)
                     self._train_logs += 1
-
-        # data logging for consistency_loss debugging, delete after usage
-        # for k, v in self.accum_data.items():
-        #     self.log_data[k].append(torch.cat(v).squeeze().tolist())
-        #     self.accum_data[k] = []
-        # self.log_data['weights'].append(self.net.ground_bias.detach().cpu().tolist())
 
         # After each epoch: check validation loss and convergence
         val_loss, val_losses = self._compute_validation_loss()
@@ -442,10 +367,6 @@ class BaseTrainTester:
         backbone_params = [  # backbone net parameters, train with lower lr
             param for name, param in self.net.named_parameters()
             if 'top_net' in name and param.requires_grad]
-        # debug_params = [  # extra parameters, train with config lr
-        #     name for name, param in self.net.named_parameters()
-        #     if 'top_net' not in name and param.requires_grad]
-        # print(debug_params)
         return torch.optim.Adam(
             [
                 {'params': backbone_params, 'lr': 0.1 * self._learning_rate},

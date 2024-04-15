@@ -24,7 +24,7 @@ class ObjectClassifier(BaseObjectClassifier):
                                                     mask=self.test_on_masked)  # no masking
 
         pretrained_model = config.pretrained_model
-        tmp_path_name = f"/nfs-data/vrd_prerequisites/models/{pretrained_model}_preddet_VG200_finetuned"
+        tmp_path_name = f"prerequisites/models/{pretrained_model}_preddet_VG200_finetuned"
         self.logger.debug(f'Loading {tmp_path_name.split("/")[-1]} model..')
         self.logger.warn("The pretrained models are hard coded for VG200 dataset only!!")
         tmp_path_name = osp.join(tmp_path_name, 'model.pt')

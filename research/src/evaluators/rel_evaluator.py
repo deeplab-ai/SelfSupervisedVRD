@@ -93,14 +93,6 @@ class RelationshipEvaluator:
 
     def print_stats(self, task, net_info):
         """Print recall statistics for given task."""
-        # f = open('/home/z.anastasakis/deeplab_sgg/results/few_shot.txt', 'a')
-        f = open('/home/z.anastasakis/deeplab_sgg/results/paper_results.txt', 'a')
-        f.write(f'##################### {self.net_name} ##################### \n')
-        f.write(f'Pretrained model: {net_info["pretrained_net"]} \n')
-        f.write(f'K - shot: {net_info["few_shot"]} \n')
-        f.write(f'Random seed: {net_info["random_seed"]} \n')
-        f.write(' \n')
-        # f.close()
         for rmode in ('micro', 'macro'):
             for cmode in ('graph constraints', 'no constraints'):
                 for dmode in ('full', 'zeroshot'):
@@ -113,8 +105,6 @@ class RelationshipEvaluator:
                         % (rmode, task, dmode, cmode),
                         self._compute_recall(rmode, cmode, dmode)
                     )
-        f.write(' \n')
-        f.close()
 
     def _compute_recall(self, rmode, cmode, dmode):
         """Compute micro or macro recall."""

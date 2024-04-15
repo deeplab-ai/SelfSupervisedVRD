@@ -80,12 +80,6 @@ class ObjClsTrainTester(BaseTrainTester):
         if type(scores) is tuple:
             scores, mask_idx_obj = scores
         targets = self.data_loader.get('object_ids', batch, step)
-        # take loss only on masked object
-        # dim_2 = scores.shape[1]
-        # scores = scores[mask_idx_obj]
-        # scores = torch.reshape(scores, (1, dim_2))
-        # targets = torch.LongTensor([targets[mask_idx_obj].item()]).to('cuda')
-        # losses = {'obj_loss': self.criterion(scores[mask_idx_obj], targets[mask_idx_obj])}  # loss on masked objects
         losses = {'obj_loss': self.criterion(scores, targets)}
         loss = losses['obj_loss']
         if self.teacher is not None:

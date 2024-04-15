@@ -270,24 +270,6 @@ class TransformerDecoder(Module):
                              memory_key_padding_mask=memory_key_padding_mask)
             self_attn_weights_all = torch.cat((self_attn_weights_all, self_attn_weights.unsqueeze(0)))
             cross_attn_weights_all = torch.cat((cross_attn_weights_all, cross_attn_weights.unsqueeze(0)))
-        # for idx, mod in enumerate(self.layers):
-        #     if self.residual:
-        #         if idx == 2 or idx == 4:
-        #             output += tgt  # residual connection
-        #             tgt = output
-        #         output, attn_weights = mod(output, memory, tgt_mask=tgt_mask,
-        #                                    memory_mask=memory_mask,
-        #                                    tgt_key_padding_mask=tgt_key_padding_mask,
-        #                                    memory_key_padding_mask=memory_key_padding_mask)
-        #         if idx == self.num_layers - 1:
-        #             output += tgt
-        #     else:
-        #         output, attn_weights = mod(output, memory, tgt_mask=tgt_mask,
-        #                      memory_mask=memory_mask,
-        #                      tgt_key_padding_mask=tgt_key_padding_mask,
-        #                      memory_key_padding_mask=memory_key_padding_mask)
-        #
-        #     attn_weights_all = torch.cat((attn_weights_all, attn_weights.unsqueeze(0)))
 
         if self.norm is not None:
             output = self.norm(output)

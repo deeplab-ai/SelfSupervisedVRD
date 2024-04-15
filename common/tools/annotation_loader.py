@@ -78,8 +78,6 @@ class AnnotationLoader:
         pred_count = {i: 0 for i in range(self.num_rel_classes)}
 
         static_keys = ['filename', 'split_id', 'height', 'width', 'dataset', 'objects']
-        # rel_keys = ['ids', 'merged_ids', 'names', 'subj_ids', 'obj_ids', 'neg_ids']
-        # obj_keys = ['boxes', 'ids', 'names', 'scores']
         rel_keys = ['ids', 'merged_ids', 'names', 'subj_ids', 'obj_ids']
         obj_keys = ['boxes', 'ids', 'names']
 
@@ -145,10 +143,8 @@ class AnnotationLoader:
             if anno['split_id'] == 0:
                 i += 1
                 if i <= self._lb_imgs:
-                    # print(idx)
                     anno['labeled'] = 1
                 else:
-                    # print(idx)
                     anno['labeled'] = 0
             else:
                 anno['labeled'] = 2
@@ -157,8 +153,6 @@ class AnnotationLoader:
     def _few_shot_filter(self, annos, n):
         self.logger.info(f"Creating {n}-shot dataset...")
         if self._mode == 'preddet':
-            # json_v = '2' if self._dataset == 'VG200' else '3'
-            # self.logger.debug(f"Loading {self._dataset}_few_shot_dict_v{json_v}.json file...")
             self.logger.debug(f"Loading {self._dataset}_few_shot_dict.json file...")
             with open(self.prerequisites_path + self._dataset + f"_few_shot_dict.json", 'r') as f:
                 few_shot_dict = json.load(f)
@@ -179,7 +173,6 @@ class AnnotationLoader:
                     if idx not in to_keep:
                         to_keep[idx] = set()
                     to_keep[idx].add(rel_idx)
-        # print("Filtering annos...")
         few_shot_annos = []
         for i in tqdm(range(len(annos))):
             if annos[i]['split_id'] != 0:
@@ -199,7 +192,6 @@ class AnnotationLoader:
                     few_shot_annos.append(new_anno)
         num_labeled_data = 0
         preds_count = {i: 0 for i in range(71)}
-        # print(len(few_shot_annos))
         for annos in few_shot_annos:
             if annos['split_id'] == 0:
                 for ind in annos['relations']['ids']:
@@ -207,7 +199,6 @@ class AnnotationLoader:
                     if (ind != 70 and self._dataset == 'VRD') or (ind != 50 and self._dataset == 'VG200'):
                         num_labeled_data += 1
         self.logger.info(f"Num. of labeled data: {num_labeled_data}")
-        # print("Done!")
         return few_shot_annos
 
     def _reduce_labaled_data(self, annotations):
@@ -215,26 +206,20 @@ class AnnotationLoader:
             preds_count = {i: 0 for i in range(71)}
             red_preds_count = {i: 0 for i in range(71)}
             for annos in annotations:
-                # print(annos['relations'])
                 for ind in annos['relations']['ids']:
                     if ind != 70:
                         preds_count[ind] += 1
-            # print(preds_count)
             num_labeled = 0
             for key in preds_count.keys():
                 if key != 70:
                     num_labeled += preds_count[key]
-            # print('num of labeled data: ', num_labeled)
             self.logger.debug("Num. of labeled data: %d", num_labeled)
             self.logger.info("Reducing labeled data...")
             lb_perc = self._lb_perc
             red_lb = int(lb_perc * num_labeled)
-            # print('reduction of labeled data by: ', red_lb)
             new_num_labaled = (1.0 - lb_perc) * num_labeled
-            # print('new num of labeled data: ', int(new_num_labaled))
             self.logger.debug("New num. of labeled data: %d", new_num_labaled)
             sorted_preds = {k: preds_count[k] for k in sorted(preds_count, key=preds_count.get, reverse=True)}
-            # print(sorted_preds)
 
             first_key = list(sorted_preds.keys())[0]
             while red_lb > 0:
@@ -269,16 +254,7 @@ class AnnotationLoader:
                             sorted_preds[key] = int(tmp / 2)
             red_preds_count = {k: red_preds_count[k] for k in
                                sorted(red_preds_count, key=red_preds_count.get, reverse=True)}
-            # print('red_preds_count: ', red_preds_count)
-            # print('sorted_preds: ', sorted_preds)
-            # tmp1 = tmp2 = 0
-            # for key in red_preds_count.keys():
-            #     tmp2 += sorted_preds[key]
-            #     tmp1 += red_preds_count[key]
-            # print(tmp1, tmp2)
-            # print(annotations[100])
             for annos in annotations:
-                # print(annos['relations'])
                 cntr = 0
                 for indx, id in enumerate(annos['relations']['ids']):
                     if red_preds_count[id] > 0:
@@ -288,10 +264,6 @@ class AnnotationLoader:
                         annos['relations']['merged_ids'] = np.delete(annos['relations']['merged_ids'], indx - cntr)
                         annos['relations']['subj_ids'] = np.delete(annos['relations']['subj_ids'], indx - cntr)
                         annos['relations']['obj_ids'] = np.delete(annos['relations']['obj_ids'], indx - cntr)
-
-                        # replace the reduced labeled data with bg
-                        # annos['relations']['ids'][indx] = 70
-                        # annos['relations']['names'][indx] = '__background__'
                         red_preds_count[id] -= 1
                         cntr += 1
             # remove images with zero relations
@@ -301,77 +273,22 @@ class AnnotationLoader:
                     empty_images.append(indx)
             for i, empty_image in enumerate(empty_images):
                 del annotations[empty_image - i]
-            # print(annotations[100])
             return annotations
 
     def few_shot(self, annotations):
         self.logger.info(f"{self._k_shot}-shot learning...")
-        # print(annotations[0])
         preds_count = {i: 0 for i in range(71)}
         red_preds_count = {i: self._k_shot for i in range(70)}
         red_preds_count[70] = 0
         keep_rel_few_shot = {f"{i}": [] for i in range(len(annotations)) if annotations[i]['split_id'] == 0}
-        # for annos in annotations:
-        #     # print(annos['relations'])
-        #     for ind in annos['relations']['ids']:
-        #         if ind != 70:
-        #             preds_count[ind] += 1
-        # print(preds_count)
-        # print(red_preds_count)
-        # sorted_rel = {k: preds_count[k] for k in
-        #  sorted(preds_count, key=preds_count.get, reverse=True)}
-        # print(sorted_rel)
-        # num_labeled = 0
-        # for key in preds_count.keys():
-        #     if key != 70:
-        #         num_labeled += preds_count[key]
-        # self.logger.debug(f"Shuffling with seed of value {self.random_seed}")
-        # random.Random(self.random_seed).shuffle(annotations)
-        with open(self._json_path + self._dataset + "_few_shot_dict_v2.json", 'r') as f:
+        with open(self._json_path + self._dataset + "_few_shot_dict.json", 'r') as f:
             few_shot_dict_samples = json.load(f)
-        # print(few_shot_dict_samples)
-        # print(annotations[73]['relations']['ids'][14])  # the class of the predicate (e.g. 0)
-        # print(annotations[0])
 
         for class_idx in few_shot_dict_samples:
             for idx, samples in enumerate(few_shot_dict_samples[class_idx]):
                 keep_rel_few_shot[f"{samples[0]}"].append(samples[1])
                 if idx + 1 == self._k_shot:
                     break
-        # few_shot_annos = []
-        # print(annotations[0]['relations'])
-        # print(annotations[0])
-        # for key in keep_rel_few_shot.keys():
-        #     few_shot_annos.append(
-        #         {
-        #             'filename': annotations[int(key)]['filename'],
-        #
-        #         }
-        #     )
-        #     print(keep_rel_few_shot[key])
-        #     break
-        # sys.exit(2)
-        # print(
-        #     annotations[keep_rel_few_shot['0']]['relations']['ids'][0]
-        # )
-
-        # sys.exit(2)
-        # keep the k first relations
-        # for idx, annos in enumerate(annotations):
-        #     if annos['split_id'] == 0:
-        #         cntr = 0
-        #         for indx, id in enumerate(annos['relations']['ids']):
-        #             if red_preds_count[id] > 0:
-        #                 red_preds_count[id] -= 1
-        #             else:
-        #                 annos['relations']['ids'] = np.delete(annos['relations']['ids'], indx - cntr)
-        #                 annos['relations']['names'] = np.delete(annos['relations']['names'], indx - cntr)
-        #                 annos['relations']['merged_ids'] = np.delete(annos['relations']['merged_ids'], indx - cntr)
-        #                 annos['relations']['subj_ids'] = np.delete(annos['relations']['subj_ids'], indx - cntr)
-        #                 annos['relations']['obj_ids'] = np.delete(annos['relations']['obj_ids'], indx - cntr)
-        #                 cntr += 1
-
-        # sotiris dict (thanks sotiris)
         few_shot_annos = []
         for idx, annos in enumerate(annotations):
             if annos['split_id'] == 0:
@@ -390,16 +307,8 @@ class AnnotationLoader:
                     few_shot_annos.append(annos)
             else:
                 few_shot_annos.append(annos)
-        # empty_images = []
-        # for indx, annos in enumerate(annotations):
-        #     if annos['relations']['names'].size == 0:
-        #         empty_images.append(indx)
-        # for i, empty_image in enumerate(empty_images):
-        #     del annotations[empty_image - i]
-
         num_labeled_data = 0
         preds_count = {i: 0 for i in range(71)}
-        # print(len(few_shot_annos))
         for annos in few_shot_annos:
             if annos['split_id'] == 0:
                 for ind in annos['relations']['ids']:
@@ -407,9 +316,6 @@ class AnnotationLoader:
                     if (ind != 70 and self._dataset == 'VRD') or (ind != 50 and self._dataset == 'VG200'):
                         num_labeled_data += 1
         self.logger.info(f"Num. of labeled data: {num_labeled_data}")
-        # print("num of images :", len(annotations))
-        # print(few_shot_annos[0])
-        # sys.exit(2)
         return few_shot_annos
 
     def get_class_counts(self, feature='relations'):

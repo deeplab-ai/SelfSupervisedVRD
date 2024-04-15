@@ -58,10 +58,6 @@ class BaseSGGenerator(nn.Module):
             featmap_names=['0', '1', '2', '3'],
             output_size=7,
             sampling_ratio=2)
-        # self.test_roi_pool = MultiScaleRoIAlign(
-        #     featmap_names=['0', '1', '2', '3'],
-        #     output_size=self._mask_size,
-        #     sampling_ratio=2)
         _top_net = nn.Sequential(
             _backbone.roi_heads.box_head.fc6, nn.ReLU(),
             _backbone.roi_heads.box_head.fc7, nn.ReLU())
@@ -111,8 +107,6 @@ class BaseSGGenerator(nn.Module):
             objects['pool_features'] = self.get_obj_pooled_features(
                 base_features, object_boxes
             )
-        # if pretrained_net is not None:
-        #     objects['pretrained_out'] =
         if 'roi_features' in self.features:
             objects['roi_features'] = self.get_roi_features(
                 base_features, object_boxes
@@ -143,14 +137,6 @@ class BaseSGGenerator(nn.Module):
             )
             for btch in range(1 + (len(pairs) - 1) // self.rel_batch_size)
         ]
-        #print(len(outputs))
-        # res = [
-        #     torch.cat([output[k] for output in outputs], dim=0)
-        #     if outputs[0][k] is not None else None
-        #     for k in range(len(outputs[0]))
-        # ]
-        # print(len(res))
-        # sys.exit(2)
         return [
             torch.cat([output[k] for output in outputs], dim=0)
             if outputs[0][k] is not None else None
@@ -169,14 +155,9 @@ class BaseSGGenerator(nn.Module):
         returns
         masked_img: tensor, the original image with one object randomly masked.
         """
-        # torch.set_printoptions(threshold=1000000)
         num_objs = object_boxes.shape[0]
-        # masked_bbox = torch.randint(num_objs, (1,)).item()
         masked_obj_ids = torch.rand(num_objs)
         masked_obj_ids = masked_obj_ids < 0.15  # mask each object with 15% probability
-        # bbox = object_boxes[masked_bbox].int()
-        # image[:, bbox[1] - 1:bbox[3], bbox[0] - 1:bbox[2]] = 0
-
         masked_bboxes = object_boxes[masked_obj_ids].int()
         for masked_bbox in masked_bboxes:
             image[:, masked_bbox[1] - 1:masked_bbox[3], masked_bbox[0] - 1:masked_bbox[2]] = 0
@@ -206,10 +187,6 @@ class BaseSGGenerator(nn.Module):
     @torch.no_grad()
     def get_resnet50_features(self):
         """Forward pass for a list of image tensors."""
-        # orig_shape = image.shape[-2:]
-        # image, _ = self.transform([image], None)
-        # self._img_shape = image.image_sizes[0]
-        # self._box_scales = self._compute_scales(orig_shape, self._img_shape)
         return self.resnet50_backbone(self.res_image.tensors)
 
     def get_obj_1hot_vectors(self, object_ids):
@@ -235,8 +212,6 @@ class BaseSGGenerator(nn.Module):
         """Forward pass for a list of object rois."""
         rois = self._rescale_boxes(rois, self._box_scales)
         features = self.orig_roi_pool(base_features, [rois], [self._img_shape])
-        # test_features = self.test_roi_pool(base_features, [rois], [self._img_shape])
-        # return self.obj_top_net(features.flatten(start_dim=1)), test_features
         return self.obj_top_net(features.flatten(start_dim=1))
 
     def get_pred_embeddings(self, predicate_ids):

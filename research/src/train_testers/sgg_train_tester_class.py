@@ -120,8 +120,6 @@ class SGGTrainTester(BaseTrainTester):
         if not self._test_on_negatives:
             with open(self._results_path + 'results' + end, 'w') as fid:
                 json.dump(results, fid)
-            # with open('/nfs-data/vrd_prerequisites/models/finetuned_SSL_transformer_random_mask1_preddet_VRD'+ end, 'w') as fid:
-            #     json.dump(results, fid)
 
     def _compute_loss(self, batch, step):
         """Compute loss for current batch."""
