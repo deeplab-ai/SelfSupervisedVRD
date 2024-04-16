@@ -12,6 +12,7 @@ that capture the interaction of objects within a scene and are highly predictive
 This repository contains the code for reproducing our IEEE/CVF Winter Conference on Applications of Computer Vision 2024 paper and is based on the [grounding-consistent-vrd](https://github.com/deeplab-ai/grounding-consistent-vrd). You can find our paper [here](https://openaccess.thecvf.com/content/WACV2024/papers/Anastasakis_Self-Supervised_Learning_for_Visual_Relationship_Detection_Through_Masked_Bounding_Box_WACV_2024_paper.pdf).
 
 ![](https://github.com/deeplab-ai/SelfSupervisedVRD/blob/main/images/pre-training.jpg?raw=true)
+
 ## Environment Setup
 After cloning this repository, you can set up a conda environment using the *mbbr.yml* config file:
 ```bash
@@ -42,7 +43,7 @@ These relationships are given in the **prerequisites/{VG200/VRD}_few_shot_dict.j
 manually-selected samples by running the following command:
 
 ```python
-python3 main_research.py --model=SSL_finetune --net_name=FinetunedNetwork --dataset=VRD --pretrain_arch=encoder --few_shot=5 --pretrained_model=MBBRNetwork --projection_head --normal --pretrain_task=reconstruction
+python3 main_research.py --model=SSL_finetune --net_name=FinetunedNetwork --dataset=VG200 --pretrain_arch=encoder --few_shot=5 --pretrained_model=MBBRNetwork --projection_head --normal --pretrain_task=reconstruction
 ```
 
 ## Test
