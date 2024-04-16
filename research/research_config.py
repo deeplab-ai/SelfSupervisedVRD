@@ -312,6 +312,10 @@ class ResearchConfig(Config):
             'results_path': osp.join(self.prerequisites_path,
                                      'results', self.commit, '')
         }
+        if not osp.exists(self.prerequisites_path + 'models/'):
+            os.mkdir(self.prerequisites_path + 'models/')
+        if not osp.exists(self.prerequisites_path + 'results/'):
+            os.mkdir(self.prerequisites_path + 'results/')
         for path in paths.values():
             if not osp.exists(path):
                 os.mkdir(path)
