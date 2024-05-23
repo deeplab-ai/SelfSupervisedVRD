@@ -38,7 +38,7 @@ python3 main_research.py --model=MBBR --net_name=MBBRNetwork --projection_head -
 ```python
 python3 main_research.py --model=SSL_finetune --net_name=FinetunedNetwork --dataset=VG200 --pretrain_arch=encoder --random_few_shot=10 --random_seed=4 --pretrained_model=MBBRNetwork --projection_head --normal --pretrain_task=reconstruction
 ```
-The above command trains a 2-layer MLP network on 5 random samples from the VRD dataset. However, in our work we also manually selected {1,2,5} accurate relationships per Predicate Category and used them to train our classifier.
+The above command trains a 2-layer MLP network on 10 random samples from the VRD dataset. However, in our work we also manually selected {1,2,5} accurate relationships per Predicate Category and used them to train our classifier.
 These relationships are given in the **prerequisites/{VG200/VRD}_few_shot_dict.json** files. You can train a classifier on these
 manually-selected samples by running the following command:
 
@@ -51,16 +51,23 @@ After training, testing is automatically performed and micro/macro Recal@[20, 50
 
 Checkpointing is performed so re-running step 2 for an already trained model will simply perform testing.
 
-## Bibtex
+## Citation
+If you plan to use this code in your work or experiments, please use the following citation:
 ```bash
-@InProceedings{Anastasakis_2024_WACV,
-    author    = {Anastasakis, Zacharias and Mallis, Dimitrios and Diomataris, Markos and Alexandridis, George and Kollias, Stefanos and Pitsikalis, Vassilis},
-    title     = {Self-Supervised Learning for Visual Relationship Detection Through Masked Bounding Box Reconstruction},
-    booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-    month     = {January},
-    year      = {2024},
-    pages     = {1206-1215}
-}
+@INPROCEEDINGS{Anastasakis_WACV_2024,
+   author={Anastasakis, Zacharias and Mallis, Dimitrios and Diomataris, Markos and Alexandridis,
+George and Kollias, Stefanos and Pitsikalis, Vassilis},
+   booktitle={2024 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+   title={Self-Supervised Learning for Visual Relationship Detection through Masked Bounding Box
+Reconstruction},
+   year={2024},
+   volume={},
+   number={},
+   pages={1195-1204},
+   keywords={Representation learning;Visualization;Computer vision;Codes;Self-supervised
+learning;Predictive models;Task analysis;Algorithms;Image recognition and
+understanding;Algorithms;Machine learning architectures;formulations;and algorithms},
+   doi={10.1109/WACV57701.2024.00124}}
 ```
 
 #### Feel free to contact us for any issues!!
